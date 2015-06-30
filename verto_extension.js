@@ -291,6 +291,17 @@ function makeVerto(callbacks, stunsConfig) {
 	}, callbacks);
 }
 
+var RTCPeerConnectionCallbacks = {
+	iceFailed: function(e) {
+		console.log('received ice negotiation failed');
+		callback({'status':'failed', 'errorcode': 1007}); // Failure on call
+		cur_call = null;
+		verto.hangup();
+		verto = null;
+		clearTimeout(callTimeout);
+	}
+};
+
 function webrtc_call(voiceBridge, conferenceUsername, conferenceIdNumber, userCallback) {
 	if (userCallback) {
 		callback = userCallback;

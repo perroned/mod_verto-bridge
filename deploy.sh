@@ -47,3 +47,14 @@ targetLine='\$\.verto\.init({}, init);'
 substitution='\/* & *\/'
 targetFile='../verto.js'
 sed -i "s/$targetLine/$substitution/g" $targetFile
+
+# allows me to add a callback specifically for when ICE negotiation fails
+targetLine='peer.onicecandidate = function(event) {'
+substitution='peer\.oniceconnectionstatechange = function(event) {\
+if (event\.currentTarget\.iceConnectionState == \"failed\") {\
+RTCPeerConnectionCallbacks\.iceFailed(event);\
+}\
+}\
+&'
+targetFile='../js/jquery.FSRTC.js'
+sed -i "s/$targetLine/$substitution/g" $targetFile
