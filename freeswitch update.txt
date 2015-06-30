@@ -1,0 +1,23 @@
+# stop freeswitch
+# cd /home/firstuser/freeswitch.git
+git pull origin master
+
+sudo ./bootstrap.sh -j
+sudo ./configure -C
+
+perl -i -pe 's/#formats\/mod_vlc/formats\/mod_vlc/g' modules.conf
+perl  -i -pe 's/#applications\/mod_av/applications\/mod_av/g' modules.conf
+
+rm config.cache
+sudo make distclean
+sudo make
+
+sudo make install
+sudo make cd-sounds-install
+sudo make cd-moh-install
+sudo make samples
+
+sudo vim /usr/local/freeswitch/conf/vars.xml // change the default password from '1234'
+
+sudo /usr/local/freeswitch/bin/freeswitch
+sudo /etc/init.d/apache2 restart
