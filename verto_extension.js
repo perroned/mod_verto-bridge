@@ -346,4 +346,21 @@ $(document).ready(function() {
 		leaveWebRTCVoiceConference();
 		cur_call = null;
 	});
+
+	$("body").append("<button id='shareScreen' style='position:absolute; top:60px; left:0px; width:500px; height:30px;'>shareScreen</button>");
+	$("#shareScreen").click(function() {
+		console.log("shareScreen button");
+		doShare(true);
+		$("#shareScreen").hide();
+		$("#stopScreen").show();
+	});
+
+	$("body").append("<button id='stopScreen' style='position:absolute; top:60px; left:0px; width:500px; height:30px;'>stopScreen</button>");
+	$("#stopScreen").click(function() {
+		console.log("stopScreen button");
+		doShare(false);
+		$("#shareScreen").show();
+		$("#stopScreen").hide();
+	});
+	$("#stopScreen").hide();
 });
