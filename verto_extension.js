@@ -289,6 +289,7 @@ function makeVerto(callbacks, stunsConfig) {
 		iceServers: stunsConfig, // use user supplied stun configuration
 		// iceServers: true, // use stun, use default verto configuration
 	}, callbacks);
+	refresh_devices();
 }
 
 var RTCPeerConnectionCallbacks = {
