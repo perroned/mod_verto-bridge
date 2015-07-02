@@ -184,7 +184,7 @@ function make_call(voiceBridge, conferenceUsername, conferenceIdNumber, userCall
 	}
 	callPurposefullyEnded = false;
 
-	// after 15 seconds if a call hans't been established display error, hangup and logout of verto
+	// after 15 seconds if a call hasn't been established display error, hangup and logout of verto
 	callTimeout = setTimeout(function() {
 		console.log('Ten seconds without updates sending timeout code');
 		callback({'status':'failed', 'errorcode': 1006}); // Failure on call
