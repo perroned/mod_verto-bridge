@@ -351,7 +351,7 @@ $(document).ready(function() {
 	$("body").append("<button id='shareScreen' style='position:absolute; top:60px; left:0px; width:500px; height:30px;'>shareScreen</button>");
 	$("#shareScreen").click(function() {
 		console.log("shareScreen button");
-		doShare(true);
+		screenStart(true);
 		$("#shareScreen").hide();
 		$("#stopScreen").show();
 	});
@@ -359,7 +359,7 @@ $(document).ready(function() {
 	$("body").append("<button id='stopScreen' style='position:absolute; top:60px; left:0px; width:500px; height:30px;'>stopScreen</button>");
 	$("#stopScreen").click(function() {
 		console.log("stopScreen button");
-		doShare(false);
+		screenStart(false);
 		$("#shareScreen").show();
 		$("#stopScreen").hide();
 	});

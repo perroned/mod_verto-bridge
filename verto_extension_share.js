@@ -1,5 +1,5 @@
 function screenStart(state, callback) {
-	doShare(state);
+	doshare(state);
 	if (state) {
 			callback({'status':'success', 'message': 'screenshare started'});
 	} else {
