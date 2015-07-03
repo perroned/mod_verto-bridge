@@ -35,11 +35,12 @@ sudo sed -i "s/$targetLine/$substitution/g" $targetFile
 # substitute the minified verto code for the 3 separate components and my extension
 targetLine='<script type=\"text\/javascript\" src=\"verto.js\"><\/script>'
 # substitute with
-substitution="<script type=\"text\/javascript\" src=\"js\/jquery.FSRTC.js\"><\/script>\
-<script type=\"text\/javascript\" src=\"js\/jquery.jsonrpcclient.js\"><\/script>\
-<script type=\"text\/javascript\" src=\"js\/jquery.verto.js\"><\/script>\
-<script type=\"text\/javascript\" src=\"verto.js\"><\/script>\
-<script type=\"text\/javascript\" src=\".\/$verto\/verto_extension.js\"><\/script>"
+substitution="<script type=\"text\/javascript\" src=\"js\/jquery.FSRTC.js\"><\/script>\n\
+<script type=\"text\/javascript\" src=\"js\/jquery.jsonrpcclient.js\"><\/script>\n\
+<script type=\"text\/javascript\" src=\"js\/jquery.verto.js\"><\/script>\n\
+<script type=\"text\/javascript\" src=\"verto.js\"><\/script>\n\
+<script type=\"text\/javascript\" src=\".\/$verto\/verto_extension.js\"><\/script>\n\
+<script type=\"text\/javascript\" src=\".\/$verto\/verto_extension_share.js\"><\/script>"
 sed -i "s/$targetLine/$substitution/g" $targetFile
 
 # remove the initialization on start up
