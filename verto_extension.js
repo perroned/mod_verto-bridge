@@ -128,8 +128,8 @@ function docall(extension, conferenceUsername, conferenceIdNumber, callbacks) {
 	$("#main_info").html("Trying");
 
 	check_vid_res();
-	outgoingBandwidth = "default";
-	incomingBandwidth = "default";
+	outgoingBandwidth = "5120";
+	incomingBandwidth = "5120";
 
 	cur_call = verto.newCall({
 		destination_number: extension,
@@ -158,6 +158,7 @@ function isLoggedIntoVerto() {
 // overwrite and substitute my own init function
 init = function() {
 	cur_call = null;
+	share_call = null;
 	$(".sharediv").show();
 	$("#camdiv").show();
 	$("#use_vid").prop("checked", "true");
@@ -263,10 +264,10 @@ function makeVerto(callbacks, stunsConfig) {
 	var socketUrl = "wss://" + hostName + ":" + vertoPort;
 	var login = "1008";
 	var password = "alpine";
-	var minWidth = "320";
-	var minHeight = "240";
-	var maxWidth = "320";
-	var maxHeight = "240";
+	var minWidth = "1920";
+	var minHeight = "1080";
+	var maxWidth = "1920";
+	var maxHeight = "1080";
 
 	console.log("stuns info is");
 	console.log(stunsConfig);
