@@ -64,25 +64,25 @@ function doshare(on) {
 		return;
 	}
 
-	getScreenId(function (error, sourceId, screen_constraints) {
-		console.log("Attempting Screen Capture....");
-		share_call = verto.newCall({
-			destination_number: extension + "-screen",
-			caller_id_name: conferenceUsername + " (Screen)",
-			caller_id_number: conferenceIdNumber + " (screen)",
-			// destination_number: extension,
-			// caller_id_name: conferenceUsername,
-			// caller_id_number: conferenceIdNumber,
-			outgoingBandwidth: outgoingBandwidth,
-			incomingBandwidth: incomingBandwidth,
-			videoParams: screen_constraints.video.mandatory,
-			useCamera: true,
-			useVideo: true,
-			screenShare: true,
-			dedEnc: true,
-			mirrorInput: true,
-			tag: "webcam"
+	getChromeExtensionStatus( function() {
+		getScreenConstraints(function(error, screen_constraints) {
+			if(error) {
+				return console.error(error);
+			}
+
+			console.log('screen_constraints', screen_constraints);
+			share_call = verto.newCall({
+				destination_number: extension + "-screen",
+				caller_id_name: conferenceUsername + " (Screen)",
+				caller_id_number: conferenceIdNumber + " (screen)",
+				outgoingBandwidth: outgoingBandwidth,
+				incomingBandwidth: incomingBandwidth,
+				videoParams: screen_constraints.mandatory,
+				useVideo: true,
+				screenShare: true,
+				dedEnc: true,
+				mirrorInput: true,
+			});
 		});
 	});
-
 }
