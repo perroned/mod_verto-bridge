@@ -80,8 +80,8 @@ function doshare(on) {
 				videoParams: screen_constraints.mandatory,
 				useVideo: true,
 				screenShare: true,
-				dedEnc: true,
-				mirrorInput: true,
+				dedEnc: false,
+				mirrorInput: false,
 			});
 		});
 	});
