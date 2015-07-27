@@ -4,21 +4,15 @@ function screenStart(state, callback) {
 			// runs when the websocket is successfully created
 			callbacks.onWSLogin = function(v, success) {
 				doshare(state);
-				goto_page("main");
 				callback({'status':'success', 'message': 'screenshare started'});
 				console.log("logged in. starting screenshare");
-				$("#webcam").show()
-				$("#webcam").css("z-index","1000")
 			}
 			// set up verto
 			$.verto.init({}, init);
 		} else {
 			console.log("already logged into verto, going straight to making a call");
 			doshare(state);
-			goto_page("main");
 			callback({'status':'success', 'message': 'screenshare started'});
-			$("#webcam").show()
-			$("#webcam").css("z-index","1000")
 		}
 	} else {
 		doshare(state);
@@ -38,13 +32,8 @@ function doshare(on) {
 		return;
 	}
 
-	$('#ext').trigger('change');
-	$("#main_info").html("Trying");
-	$("#vqual_hd").prop("checked", true)
-
 	outgoingBandwidth = incomingBandwidth = "5120";
 	// outgoingBandwidth = incomingBandwidth = "default";
-
 	var sharedev = "screen"; // $("#useshare").find(":selected").val();
 
 	if (sharedev !== "screen") {

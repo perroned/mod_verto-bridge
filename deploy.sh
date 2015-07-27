@@ -59,3 +59,6 @@ RTCPeerConnectionCallbacks\.iceFailed(event);\
 &'
 targetFile='../js/jquery.FSRTC.js'
 sed -i "s/$targetLine/$substitution/g" $targetFile
+
+targetFile="index2.html"
+cp targetFile ..
