@@ -64,7 +64,8 @@ function doshare(on) {
 		return;
 	}
 
-	getChromeExtensionStatus( function() {
+	getChromeExtensionStatus( function(status) {
+		sourceId = null;
 		getScreenConstraints(function(error, screen_constraints) {
 			if(error) {
 				return console.error(error);
