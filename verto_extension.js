@@ -126,7 +126,7 @@ function docall(extension, conferenceUsername, conferenceIdNumber, callbacks) {
 	}
 
 	$("#main_info").html("Trying");
-
+	$("#vqual_hd").prop("checked", true)
 	check_vid_res();
 	outgoingBandwidth = "5120";
 	incomingBandwidth = "5120";
@@ -141,8 +141,8 @@ function docall(extension, conferenceUsername, conferenceIdNumber, callbacks) {
 		useStereo: true,
 		useCamera: true,
 		useMic: true,
-		dedEnc: true,
-		mirrorInput: true,
+		dedEnc: false,
+		mirrorInput: false,
 	});
 
 	if (callbacks != null) { // add user supplied callbacks to the current call
@@ -272,6 +272,7 @@ function makeVerto(callbacks, stunsConfig) {
 	console.log("stuns info is");
 	console.log(stunsConfig);
 
+	$("#vqual_hd").prop("checked", true);
 	check_vid_res();
 	// create verto object and log in
 	verto = new $.verto({

@@ -1,28 +1,27 @@
 function screenStart(state, callback) {
-	if(!isLoggedIntoVerto()) { // start the verto log in procedure
-		// runs when the websocket is successfully created
-		callbacks.onWSLogin = function(v, success) {
-			cur_call = true;
+	if (state) {
+		if(!isLoggedIntoVerto()) { // start the verto log in procedure
+			// runs when the websocket is successfully created
+			callbacks.onWSLogin = function(v, success) {
+				doshare(state);
+				goto_page("main");
+				callback({'status':'success', 'message': 'screenshare started'});
+				console.log("logged in. starting screenshare");
+				$("#webcam").show()
+				$("#webcam").css("z-index","1000")
+			}
+			// set up verto
+			$.verto.init({}, init);
+		} else {
+			console.log("already logged into verto, going straight to making a call");
 			doshare(state);
 			goto_page("main");
-			console.log("logged in. starting screenshare");
+			callback({'status':'success', 'message': 'screenshare started'});
 			$("#webcam").show()
 			$("#webcam").css("z-index","1000")
 		}
-		// set up verto
-		$.verto.init({}, init);
 	} else {
-		console.log("already logged into verto, going straight to making a call");
-		cur_call = true;
 		doshare(state);
-		goto_page("main");
-		$("#webcam").show()
-		$("#webcam").css("z-index","1000")
-	}
-
-	if (state) {
-			callback({'status':'success', 'message': 'screenshare started'});
-	} else {
 		callback({'status':'success', 'message': 'screenshare ended'});
 	}
 }
@@ -41,11 +40,12 @@ function doshare(on) {
 
 	$('#ext').trigger('change');
 	$("#main_info").html("Trying");
-	check_vid_res();
-	outgoingBandwidth = "5120";
-	incomingBandwidth = "5120";
+	$("#vqual_hd").prop("checked", true)
 
-	var sharedev = $("#useshare").find(":selected").val();
+	outgoingBandwidth = incomingBandwidth = "5120";
+	// outgoingBandwidth = incomingBandwidth = "default";
+
+	var sharedev = "screen"; // $("#useshare").find(":selected").val();
 
 	if (sharedev !== "screen") {
 		console.log("Attempting Screen Capture with non-screen device....");
