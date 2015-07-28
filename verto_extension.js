@@ -441,3 +441,17 @@ function doWebcamPreview() {
 		return console.error(JSON.stringify(error, null, '\t'));
 	});
 }
+
+function checkSupport(callback) {
+	if(!isWebRTCAvailable()) {
+		callback({'status': 'failed', 'errorcode': 1003}); // Browser version not supported
+	}
+
+	if (!navigator.getUserMedia) {
+		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+	}
+
+	if (!navigator.getUserMedia){
+		callback({'status': 'failed', 'errorcode': '10XX'}); // getUserMedia not supported in this browser
+	}
+}
