@@ -363,4 +363,77 @@ $(document).ready(function() {
 		$("#stopScreen").hide();
 	});
 	$("#stopScreen").hide();
+
+	$("#webcamPreview").click(function() {
+		doWebcamPreview();
+	});
 });
+
+function doWebcamPreview() {
+	// var hdConstraints = {
+	// 	video: {
+	// 		mandatory: {
+	// 			minWidth: 1280,
+	// 			minHeight: 720
+	// 		}
+	// 	}
+	// };
+	// var vgaConstraints = {
+	// 	video: {
+	// 		mandatory: {
+	// 			maxWidth: 640,
+	// 			maxHeight: 360
+	// 		}
+	// 	}
+	// };
+	var vgaConstraints = {
+		"audio": false,
+		"video": {
+			"mandatory": {
+				"minWidth": 320,
+				"maxWidth": 320,
+				"minHeight": 180,
+				"maxHeight": 180,
+				"minFrameRate": 30
+			},
+			"optional": []
+		}
+	};
+	var hdConstraints = {
+		"audio": false,
+		"video": {
+			"mandatory": {
+				"minWidth": 1280,
+				"maxWidth": 1280,
+				"minHeight": 720,
+				"maxHeight": 720,
+				"minFrameRate": 30
+			},
+			"optional": []
+		}
+	};
+	var maxConstraints = {
+		"audio": false,
+		"video": {
+			"mandatory": {
+				"maxWidth": screen.width > 1920 ? screen.width : 1920,
+				"maxHeight": screen.height > 1080 ? screen.height : 1080,
+				"minWidth": screen.width > 1920 ? screen.width : 1920,
+				"maxWidth": screen.height > 1080 ? screen.height : 1080,
+				"minFrameRate": 30
+			},
+			"optional": []
+		}
+	};
+
+	var screen_constraints = hdConstraints;
+	console.log("screen constraints", screen_constraints)
+	navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+	navigator.getUserMedia(screen_constraints, function(stream) {
+		var video = document.querySelector('video');
+		video.src = URL.createObjectURL(stream);
+		video.play();
+	}, function(error) {
+		return console.error(JSON.stringify(error, null, '\t'));
+	});
+}
