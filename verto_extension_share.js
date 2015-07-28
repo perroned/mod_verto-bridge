@@ -76,3 +76,24 @@ function doshare(on) {
 		});
 	});
 }
+
+function doDesksharePreview() {
+	getChromeExtensionStatus(function(status) {
+		getScreenConstraints(function(error, screen_constraints) {
+			if(error) {
+				return console.error(error);
+			}
+
+			console.log('screen_constraints', screen_constraints);
+
+			navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+			navigator.getUserMedia({ video: screen_constraints }, function(stream) {
+				var video = document.querySelector('video');
+				video.src = URL.createObjectURL(stream);
+				video.play();
+			}, function(error) {
+				return console.error(JSON.stringify(error, null, '\t'));
+			});
+		})
+	});
+}

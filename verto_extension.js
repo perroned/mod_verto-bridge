@@ -367,6 +367,10 @@ $(document).ready(function() {
 	$("#webcamPreview").click(function() {
 		doWebcamPreview();
 	});
+
+	$("#desksharePreview").click(function() {
+		doDesksharePreview();
+	});
 });
 
 function doWebcamPreview() {
