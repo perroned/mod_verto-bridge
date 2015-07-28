@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html>
 	<body>
-		<div data-role="page" id="page-incall" align="center">
-			Verto&trade; IN CALL
-			<video id="webcam" autoplay="autoplay" style="width:100%;height:100%;object-fit:inherit;"></video>
-		</div>
+		Verto&trade; IN CALL
+		<video id="webcam" autoplay="autoplay" controls style="max-width: 80%;"></video>
 		<table id="conf_list"></table>
+
+		<button id='joinAudio' style='position:absolute; top:0px; left:0px; width:500px; height:30px;'>joinAudio</button>
+		<button id='hangUp' style='position:absolute; top:30px; left:0px; width:500px; height:30px;'>hangUp</button>
+		<button id='shareScreen' style='position:absolute; top:60px; left:0px; width:500px; height:30px;'>shareScreen</button>
+		<button id='stopScreen' style='position:absolute; top:60px; left:0px; width:500px; height:30px;'>stopScreen</button>
 
 		<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 		<script type="text/javascript" src="js/jquery.mobile.min.js"></script>

@@ -157,6 +157,7 @@ function isLoggedIntoVerto() {
 
 // overwrite and substitute my own init function
 init = function() {
+	$("#webcam").show();
 	cur_call = null;
 	share_call = null;
 	$(".sharediv").show();
@@ -334,7 +335,6 @@ function webrtc_hangup(userCallback) {
 
 // supplement my own that insert my own button and handler
 $(document).ready(function() {
-	$("body").append("<button id='joinAudio' style='position:absolute; top:0px; left:0px; width:500px; height:30px;'>joinAudio</button>");
 	$("#joinAudio").click(function() {
 		wasCallSuccessful = false;
 		var debuggerCallback = function(message) {
@@ -343,14 +343,12 @@ $(document).ready(function() {
 		callIntoConference(extension, conferenceUsername, conferenceIdNumber, debuggerCallback);
 	});
 
-	$("body").append("<button id='hangUp' style='position:absolute; top:30px; left:0px; width:500px; height:30px;'>hangUp</button>");
 	$("#hangUp").click(function() {
 		console.log("hangup button");
 		leaveWebRTCVoiceConference();
 		cur_call = null;
 	});
 
-	$("body").append("<button id='shareScreen' style='position:absolute; top:60px; left:0px; width:500px; height:30px;'>shareScreen</button>");
 	$("#shareScreen").click(function() {
 		console.log("shareScreen button");
 		screenStart(true, function(){});
@@ -358,7 +356,6 @@ $(document).ready(function() {
 		$("#stopScreen").show();
 	});
 
-	$("body").append("<button id='stopScreen' style='position:absolute; top:60px; left:0px; width:500px; height:30px;'>stopScreen</button>");
 	$("#stopScreen").click(function() {
 		console.log("stopScreen button");
 		screenStart(false, function(){});
