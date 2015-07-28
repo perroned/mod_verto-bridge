@@ -21,28 +21,6 @@ fi
 cp ../../js/src/* ../js/
 # sudo chown firstuser ../js/ -R
 
-# remove the minified entry
-targetFile='../index.html'
-targetLine='<script type=\"text\/javascript\" src=\"js\/verto-min.js\"><\/script>'
-substitution='<!-- removed -->'
-sed -i "s/$targetLine/$substitution/g" $targetFile
-
-# fix quotation error in index.html
-targetLine="<input type=\"text\" id=\"ext\"\"\/>"
-substitution="<input type=\"text\" id=\"ext\"\/>"
-sudo sed -i "s/$targetLine/$substitution/g" $targetFile
-
-# substitute the minified verto code for the 3 separate components and my extension
-targetLine='<script type=\"text\/javascript\" src=\"verto.js\"><\/script>'
-# substitute with
-substitution="<script type=\"text\/javascript\" src=\"js\/jquery.FSRTC.js\"><\/script>\n\
-<script type=\"text\/javascript\" src=\"js\/jquery.jsonrpcclient.js\"><\/script>\n\
-<script type=\"text\/javascript\" src=\"js\/jquery.verto.js\"><\/script>\n\
-<script type=\"text\/javascript\" src=\"verto.js\"><\/script>\n\
-<script type=\"text\/javascript\" src=\".\/$verto\/verto_extension.js\"><\/script>\n\
-<script type=\"text\/javascript\" src=\".\/$verto\/verto_extension_share.js\"><\/script>"
-sed -i "s/$targetLine/$substitution/g" $targetFile
-
 # remove the initialization on start up
 targetLine='\$\.verto\.init({}, init);'
 substitution='\/* & *\/'
