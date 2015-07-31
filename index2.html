@@ -2,15 +2,27 @@
 <html>
 	<body>
 		Verto&trade; IN CALL
-		<video id="webcam" autoplay="autoplay" controls style="max-width: 80%;"></video>
+		<video id="webcam" autoplay="autoplay" controls></video>
 		<table id="conf_list"></table>
 
-		<button id='joinAudio' style='position:absolute; top:0px; left:0px; width:500px; height:30px;'>joinAudio</button>
-		<button id='hangUp' style='position:absolute; top:30px; left:0px; width:500px; height:30px;'>hangUp</button>
-		<button id='shareScreen' style='position:absolute; top:60px; left:0px; width:500px; height:30px;'>shareScreen</button>
-		<button id='stopScreen' style='position:absolute; top:60px; left:0px; width:500px; height:30px;'>stopScreen</button>
-		<button id='webcamPreview' style='position:absolute; top:90px; left:0px; width:500px; height:30px;'>webcamPreview</button>
-		<button id='desksharePreview' style='position:absolute; top:120px; left:0px; width:500px; height:30px;'>desksharePreview</button>
+		<hr/>
+		<div>
+			<fieldset>
+				<legend><b>Webcam Video Quality</b>:</legend>
+				<div id="webcamResolutions"></div>
+			</fieldset>
+		</div><br>
+		<hr/>
+
+		<button id='joinAudio'>joinAudio</button>
+		<button id='hangUp'>hangUp</button>
+		<button id='shareScreen'>shareScreen</button>
+		<button id='stopScreen'>stopScreen</button>
+		<button id='desksharePreview'>desksharePreview</button>
+		<br/>
+		<button id="camPreview_qvga">webcam Preview - QVGA</button>
+		<button id="camPreview_vga">webcam Preview - VGA</button>
+		<button id="camPreview_hd">webcam Preview - HD</button>
 
 		<script type="text/javascript" src="js/jquery-2.1.1.min.js"></script>
 		<script type="text/javascript" src="js/jquery.mobile.min.js"></script>
@@ -25,5 +37,6 @@
 		<script type="text/javascript" src="mod_verto-bridge/verto_extension.js"></script>
 		<script type="text/javascript" src="mod_verto-bridge/verto_extension_share.js"></script>
 		<script type="text/javascript" src="BigBlueButton-Deskshare-Chrome-Extension/Screen-Capturing.js/Screen-Capturing.js"></script>
+		<script type="text/javascript" src="mod_verto-bridge/video_profiles.js"></script>
 	</body>
 </html>

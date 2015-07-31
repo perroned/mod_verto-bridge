@@ -7,6 +7,7 @@ var conferenceUsername = "FreeSWITCH User";
 var toDisplayDisconnectCallback = true; // if a call is dropped only display the error the first time
 var voiceBridge = extension = "3500";
 var wasCallSuccessful = false; // when the websocket connection is closed this determines whether a call was ever successfully established
+var stream;
 
 // save a copy of the hangup function registered for the verto object
 var oldHangup = $.verto.prototype.hangup;
@@ -58,25 +59,17 @@ function callIntoConference(voiceBridge, conferenceUsername, conferenceIdNumber,
 		}
 		// runs when the websocket is successfully created
 		callbacks.onWSLogin = function(v, success) {
-			display("");
 			cur_call = null;
 			ringing = false;
 			console.log("Inside onWSLogin");
 
 			if (success) {
-				online(true);
 				console.log("starting call");
 				toDisplayDisconnectCallback = true; // yes, display an error if the socket closes
 				wasCallSuccessful = true; // yes, a call was successfully established through the websocket
 				webrtc_call(voiceBridge, conferenceUsername, conferenceIdNumber, callback);
-
-				if (!window.location.hash) {
-					goto_page("main");
-				}
 			} else {
 				callback({'status':'failed', 'errorcode': '10XX'}); // eror logging verto into freeswitch
-				goto_page("main");
-				goto_dialog("login-error");
 			}
 		}
 		// set up verto
@@ -118,18 +111,15 @@ function configStuns(callbacks, callback) {
 
 function docall(extension, conferenceUsername, conferenceIdNumber, callbacks) {
 	console.log(extension + ", " + conferenceUsername + ", " + conferenceIdNumber);
-	$('#ext').trigger('change');
 
 	if (cur_call) { // only allow for one call
 		console.log("Quitting: Call already in progress");
 		return;
 	}
 
-	$("#main_info").html("Trying");
-	$("#vqual_hd").prop("checked", true)
-	check_vid_res();
-	outgoingBandwidth = "5120";
-	incomingBandwidth = "5120";
+	my_check_vid_res();
+	outgoingBandwidth = "default";
+	incomingBandwidth = "default";
 
 	cur_call = verto.newCall({
 		destination_number: extension,
@@ -142,7 +132,7 @@ function docall(extension, conferenceUsername, conferenceIdNumber, callbacks) {
 		useCamera: true,
 		useMic: true,
 		dedEnc: false,
-		mirrorInput: false,
+		mirrorInput: false
 	});
 
 	if (callbacks != null) { // add user supplied callbacks to the current call
@@ -160,12 +150,7 @@ init = function() {
 	$("#webcam").show();
 	cur_call = null;
 	share_call = null;
-	$(".sharediv").show();
-	$("#camdiv").show();
-	$("#use_vid").prop("checked", "true");
 	incomingBandwidth = "default";
-	vqual = "qvga";
-	online(false);
 	configStuns(callbacks, callback);
 }
 
@@ -265,15 +250,14 @@ function makeVerto(callbacks, stunsConfig) {
 	var socketUrl = "wss://" + hostName + ":" + vertoPort;
 	var login = "1008";
 	var password = "alpine";
-	var minWidth = "1920";
-	var minHeight = "1080";
-	var maxWidth = "1920";
-	var maxHeight = "1080";
+	var minWidth = "320";
+	var minHeight = "180";
+	var maxWidth = "320";
+	var maxHeight = "180";
 
 	console.log("stuns info is");
 	console.log(stunsConfig);
 
-	$("#vqual_hd").prop("checked", true);
 	check_vid_res();
 	// create verto object and log in
 	verto = new $.verto({
@@ -285,14 +269,42 @@ function makeVerto(callbacks, stunsConfig) {
 		loginParams: {foo: true, bar: "yes"},
 		videoParams: {
 			"minWidth": minWidth,
-			"minHeight": minHeight,
-			"maxWidth": maxWidth,
-			"maxHeight": maxHeight,
+			"minHeight": minHeight
 		},
 		iceServers: stunsConfig, // use user supplied stun configuration
 		// iceServers: true, // use stun, use default verto configuration
 	}, callbacks);
 	refresh_devices();
+}
+
+function my_check_vid_res() {
+	var videoConstraints = getAllVideoResolutions();
+	var selectedVideo = null;
+	for(var i in videoConstraints) {
+		selectedVideo = videoConstraints[i];
+		if($("#webcamQuality_"+i).is(':checked')) {
+			break;
+		}
+	}
+
+	my_real_size(selectedVideo);
+
+	if (verto) {
+		verto.videoParams({
+			"minWidth": selectedVideo.constraints.minWidth,
+			"minHeight": selectedVideo.constraints.minHeight,
+			"maxWidth": selectedVideo.constraints.maxWidth,
+			"maxHeight": selectedVideo.constraints.maxHeight,
+			"minFrameRate": selectedVideo.constraints.minFrameRate,
+			"vertoBestFrameRate": selectedVideo.constraints.vertoBestFrameRate
+		});
+	}
+}
+
+function my_real_size(selectedVideo) {
+	$("#webcam").width(selectedVideo.constraints.maxWidth);
+	$("#webcam").height(selectedVideo.constraints.maxHeight);
+	console.log("video size changed to natural default");
 }
 
 var RTCPeerConnectionCallbacks = {
@@ -364,76 +376,25 @@ $(document).ready(function() {
 	});
 	$("#stopScreen").hide();
 
-	$("#webcamPreview").click(function() {
-		doWebcamPreview();
-	});
-
 	$("#desksharePreview").click(function() {
 		doDesksharePreview();
 	});
 });
 
-function doWebcamPreview() {
-	// var hdConstraints = {
-	// 	video: {
-	// 		mandatory: {
-	// 			minWidth: 1280,
-	// 			minHeight: 720
-	// 		}
-	// 	}
-	// };
-	// var vgaConstraints = {
-	// 	video: {
-	// 		mandatory: {
-	// 			maxWidth: 640,
-	// 			maxHeight: 360
-	// 		}
-	// 	}
-	// };
-	var vgaConstraints = {
-		"audio": false,
-		"video": {
-			"mandatory": {
-				"minWidth": 320,
-				"maxWidth": 320,
-				"minHeight": 180,
-				"maxHeight": 180,
-				"minFrameRate": 30
-			},
-			"optional": []
-		}
-	};
-	var hdConstraints = {
-		"audio": false,
-		"video": {
-			"mandatory": {
-				"minWidth": 1280,
-				"maxWidth": 1280,
-				"minHeight": 720,
-				"maxHeight": 720,
-				"minFrameRate": 30
-			},
-			"optional": []
-		}
-	};
-	var maxConstraints = {
-		"audio": false,
-		"video": {
-			"mandatory": {
-				"maxWidth": screen.width > 1920 ? screen.width : 1920,
-				"maxHeight": screen.height > 1080 ? screen.height : 1080,
-				"minWidth": screen.width > 1920 ? screen.width : 1920,
-				"maxWidth": screen.height > 1080 ? screen.height : 1080,
-				"minFrameRate": 30
-			},
-			"optional": []
-		}
-	};
+$("#camPreview_qvga").click(function() { doWebcamPreview(videoContstraints["qvgaConstraints"]); });
+$("#camPreview_vga").click(function() { doWebcamPreview(videoContstraints["vgaConstraints"]); });
+$("#camPreview_hd").click(function() { doWebcamPreview(videoContstraints["hdConstraints"]); });
 
-	var screen_constraints = hdConstraints;
+function doWebcamPreview(constraints) {
+	var screen_constraints = constraints;
 	console.log("screen constraints", screen_constraints)
+	if(!!stream) {
+		$("#webcam").src = null;
+		stream.stop();
+	}
 	navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 	navigator.getUserMedia(screen_constraints, function(stream) {
+		window.stream  = stream;
 		var video = document.querySelector('video');
 		video.src = URL.createObjectURL(stream);
 		video.play();

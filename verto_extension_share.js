@@ -32,9 +32,8 @@ function doshare(on) {
 		return;
 	}
 
-	outgoingBandwidth = incomingBandwidth = "5120";
-	// outgoingBandwidth = incomingBandwidth = "default";
-	var sharedev = "screen"; // $("#useshare").find(":selected").val();
+	outgoingBandwidth = incomingBandwidth = "default";
+	var sharedev = "screen";
 
 	if (sharedev !== "screen") {
 		console.log("Attempting Screen Capture with non-screen device....");
