@@ -116,7 +116,7 @@ function docall(extension, conferenceUsername, conferenceIdNumber, callbacks) {
 		console.log("Quitting: Call already in progress");
 		return;
 	}
-
+	// determine the resolution the user chose for webcam video
 	my_check_vid_res();
 	outgoingBandwidth = "default";
 	incomingBandwidth = "default";
@@ -138,6 +138,36 @@ function docall(extension, conferenceUsername, conferenceIdNumber, callbacks) {
 	if (callbacks != null) { // add user supplied callbacks to the current call
 		cur_call.rtc.options.callbacks = $.extend(cur_call.rtc.options.callbacks, callbacks);
 	}
+}
+
+// return the webcam resolution that the user has selected
+function getChosenWebcamResolution() {
+	var videoConstraints = getAllVideoResolutions(); // retrieve all resolutions
+	var selectedVideo = null;
+	for(var i in videoConstraints) {
+		selectedVideo = videoConstraints[i];
+		if($("#webcamQuality_"+i).is(':checked')) { // compare against all resolutions
+			break;
+		}
+	}
+	return selectedVideo;
+}
+
+// receives a video resolution profile, and converts it into a constraints format for getUserMedia
+function getConstraintsFromResolution(resolution) {
+	return {
+		"audio": false,
+		"video": {
+			"mandatory": {
+				"minWidth": resolution.constraints.minWidth,
+				"maxWidth": resolution.constraints.maxWidth,
+				"minHeight": resolution.constraints.minHeight,
+				"maxHeight": resolution.constraints.maxHeight,
+				"minFrameRate": resolution.constraints.minFrameRate
+			},
+			"optional": []
+		}
+	};
 }
 
 // check if logged into verto by seeing if there is a ready websocket connection
@@ -277,33 +307,26 @@ function makeVerto(callbacks, stunsConfig) {
 	refresh_devices();
 }
 
+// sets verto to begin using the resolution that the user selected
 function my_check_vid_res() {
-	var videoConstraints = getAllVideoResolutions();
-	var selectedVideo = null;
-	for(var i in videoConstraints) {
-		selectedVideo = videoConstraints[i];
-		if($("#webcamQuality_"+i).is(':checked')) {
-			break;
-		}
-	}
-
-	my_real_size(selectedVideo);
+	var selectedVideoConstraints = getChosenWebcamResolution();
+	my_real_size(selectedVideoConstraints);
 
 	if (verto) {
 		verto.videoParams({
-			"minWidth": selectedVideo.constraints.minWidth,
-			"minHeight": selectedVideo.constraints.minHeight,
-			"maxWidth": selectedVideo.constraints.maxWidth,
-			"maxHeight": selectedVideo.constraints.maxHeight,
-			"minFrameRate": selectedVideo.constraints.minFrameRate,
-			"vertoBestFrameRate": selectedVideo.constraints.vertoBestFrameRate
+			"minWidth": selectedVideoConstraints.constraints.minWidth,
+			"minHeight": selectedVideoConstraints.constraints.minHeight,
+			"maxWidth": selectedVideoConstraints.constraints.maxWidth,
+			"maxHeight": selectedVideoConstraints.constraints.maxHeight,
+			"minFrameRate": selectedVideoConstraints.constraints.minFrameRate,
+			"vertoBestFrameRate": selectedVideoConstraints.constraints.vertoBestFrameRate
 		});
 	}
 }
 
-function my_real_size(selectedVideo) {
-	$("#webcam").width(selectedVideo.constraints.maxWidth);
-	$("#webcam").height(selectedVideo.constraints.maxHeight);
+function my_real_size(selectedVideoConstraints) {
+	$("#webcam").width(selectedVideoConstraints.constraints.maxWidth);
+	$("#webcam").height(selectedVideoConstraints.constraints.maxHeight);
 	console.log("video size changed to natural default");
 }
 
@@ -379,25 +402,29 @@ $(document).ready(function() {
 	$("#desksharePreview").click(function() {
 		doDesksharePreview();
 	});
+
+	$("#webcamPreview").click(function() { doWebcamPreview(); });
 });
 
-$("#camPreview_qvga").click(function() { doWebcamPreview(videoContstraints["qvgaConstraints"]); });
-$("#camPreview_vga").click(function() { doWebcamPreview(videoContstraints["vgaConstraints"]); });
-$("#camPreview_hd").click(function() { doWebcamPreview(videoContstraints["hdConstraints"]); });
+// retrieves the camera resolution the user selected
+// displays a local feed of the user's webcam
+function doWebcamPreview() {
+	var selectedVideoConstraints = getChosenWebcamResolution(); // this is the video profile the user chose
+	my_real_size(selectedVideoConstraints);
+	selectedVideoConstraints = getConstraintsFromResolution(selectedVideoConstraints); // convert to a valid constraints object
 
-function doWebcamPreview(constraints) {
-	var screen_constraints = constraints;
-	console.log("screen constraints", screen_constraints)
+	console.log("screen constraints", selectedVideoConstraints)
 	if(!!stream) {
 		$("#webcam").src = null;
 		stream.stop();
 	}
 	navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-	navigator.getUserMedia(screen_constraints, function(stream) {
+	navigator.getUserMedia(selectedVideoConstraints, function(stream) {
 		window.stream  = stream;
 		var video = document.querySelector('video');
 		video.src = URL.createObjectURL(stream);
 		video.play();
+		$("#webcam").show()
 	}, function(error) {
 		return console.error(JSON.stringify(error, null, '\t'));
 	});
