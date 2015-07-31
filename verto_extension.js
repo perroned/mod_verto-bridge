@@ -154,7 +154,7 @@ function getChosenWebcamResolution() {
 }
 
 // receives a video resolution profile, and converts it into a constraints format for getUserMedia
-function getConstraintsFromResolution(resolution) {
+function getWebcamConstraintsFromResolution(resolution) {
 	return {
 		"audio": false,
 		"video": {
@@ -411,7 +411,7 @@ $(document).ready(function() {
 function doWebcamPreview() {
 	var selectedVideoConstraints = getChosenWebcamResolution(); // this is the video profile the user chose
 	my_real_size(selectedVideoConstraints);
-	selectedVideoConstraints = getConstraintsFromResolution(selectedVideoConstraints); // convert to a valid constraints object
+	selectedVideoConstraints = getWebcamConstraintsFromResolution(selectedVideoConstraints); // convert to a valid constraints object
 
 	console.log("screen constraints", selectedVideoConstraints)
 	if(!!stream) {

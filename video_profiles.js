@@ -107,7 +107,17 @@ function getAllVideoResolutions() {
 	return videoContstraints;
 }
 
-function makeResolutions() {
+function makeDeskshareResolutions() {
+	var videoConstraints = getAllVideoResolutions();
+	for(var i in videoConstraints) {
+		v = videoConstraints[i];
+		$("#deskshareResolutions").append("<input type='radio' name='deskshareQuality' id='deskshareQuality_" + i + "' value='" + i + "'>");
+		$("#deskshareResolutions").append("<label for='deskshareQuality_" + i + "'>" + v.name + " " + v.constraints.minWidth + "x" + v.constraints.minHeight + "</label>");
+	}
+	$("#deskshareQuality_qvga").prop("checked", true);
+}
+
+function makeWebcamResolutions() {
 	var videoConstraints = getAllVideoResolutions();
 	for(var i in videoConstraints) {
 		v = videoConstraints[i];
@@ -116,4 +126,6 @@ function makeResolutions() {
 	}
 	$("#webcamQuality_qvga").prop("checked", true);
 }
-makeResolutions();
+
+makeWebcamResolutions();
+makeDeskshareResolutions();
