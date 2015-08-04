@@ -142,7 +142,7 @@ function docall(extension, conferenceUsername, conferenceIdNumber, callbacks) {
 
 // return the webcam resolution that the user has selected
 function getChosenWebcamResolution() {
-	var videoConstraints = getAllVideoResolutions(); // retrieve all resolutions
+	var videoConstraints = getAllPresetVideoResolutions(); // retrieve all resolutions
 	var selectedVideo = null;
 	for(var i in videoConstraints) {
 		selectedVideo = videoConstraints[i];
@@ -404,6 +404,14 @@ $(document).ready(function() {
 	});
 
 	$("#webcamPreview").click(function() { doWebcamPreview(); });
+
+	$("#getAdjustedResolutions").click(function() {
+		getAdjustedResolutions(function(result){
+			for(var i in result) {
+				$("#adjustedResolutions").append(i + ": " + result[i].width + "x" + result[i].height + "<br/>");
+			}
+		});
+	});
 });
 
 // retrieves the camera resolution the user selected

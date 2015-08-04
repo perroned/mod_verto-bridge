@@ -84,7 +84,7 @@ function doDesksharePreview() {
 
 // return the webcam resolution that the user has selected
 function getChosenDeskshareResolution() {
-	var videoConstraints = getAllVideoResolutions(); // retrieve all resolutions
+	var videoConstraints = getAllPresetVideoResolutions(); // retrieve all resolutions
 	var selectedVideo = null;
 	for(var i in videoConstraints) {
 		selectedVideo = videoConstraints[i];

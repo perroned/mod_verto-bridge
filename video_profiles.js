@@ -1,6 +1,10 @@
-var videoContstraints = [];
+/*
+	JSON definitions of all preset screen resolutions verto/bigBlueButton will
+	support
+*/
+var videoConstraints = [];
 // BigBlueButton low
-videoContstraints["low"] = {
+videoConstraints["low"] = {
 	"name": "Low quality",
 	"constraints": {
 		"minWidth": 160,
@@ -12,7 +16,7 @@ videoContstraints["low"] = {
 	}
 };
 // BigBlueButton medium
-videoContstraints["medium"] = {
+videoConstraints["medium"] = {
 	"name": "Medium quality",
 	"constraints": {
 		"minWidth": 320,
@@ -24,7 +28,7 @@ videoContstraints["medium"] = {
 	}
 };
 // BigBlueButton high
-videoContstraints["high"] = {
+videoConstraints["high"] = {
 	"name": "High quality",
 	"constraints": {
 		"minWidth": 640,
@@ -36,7 +40,7 @@ videoContstraints["high"] = {
 	}
 };
 // verto defaults
-videoContstraints["qvga"] = {
+videoConstraints["qvga"] = {
 	"name": "QVGA",
 	"constraints": {
 		"minWidth": 320,
@@ -47,7 +51,7 @@ videoContstraints["qvga"] = {
 		"vertoBestFrameRate": 30
 	}
 };
-videoContstraints["vga"] = {
+videoConstraints["vga"] = {
 	"name": "VGA",
 	"constraints": {
 		"minWidth": 640,
@@ -58,7 +62,7 @@ videoContstraints["vga"] = {
 		"vertoBestFrameRate": 30
 	}
 };
-videoContstraints["qvga_wide"] = {
+videoConstraints["qvga_wide"] = {
 	"name": "QVGA WIDE",
 	"constraints": {
 		"minWidth": 320,
@@ -69,7 +73,7 @@ videoContstraints["qvga_wide"] = {
 		"vertoBestFrameRate": 30
 	}
 };
-videoContstraints["vga_wide"] = {
+videoConstraints["vga_wide"] = {
 	"name": "VGA WIDE",
 	"constraints": {
 		"minWidth": 640,
@@ -80,7 +84,7 @@ videoContstraints["vga_wide"] = {
 		"vertoBestFrameRate": 30
 	}
 };
-videoContstraints["hd"] = {
+videoConstraints["hd"] = {
 	"name": "HD",
 	"constraints": {
 		"minWidth": 1280,
@@ -91,7 +95,7 @@ videoContstraints["hd"] = {
 		"vertoBestFrameRate": 30
 	}
 };
-videoContstraints["hhd"] = {
+videoConstraints["hhd"] = {
 	"name": "HHD",
 	"constraints": {
 		"minWidth": 1920,
@@ -102,13 +106,58 @@ videoContstraints["hhd"] = {
 		"vertoBestFrameRate": 30
 	}
 };
+videoConstraints["WUXGA"] = {
+	"name": "WUXGA",
+	"constraints": {
+		"minWidth": 1920,
+		"minHeight": 1200,
+		"maxWidth": 1920,
+		"maxHeight": 1200,
+		"minFrameRate": 15,
+		"vertoBestFrameRate": 30
+	}
+};
 
-function getAllVideoResolutions() {
-	return videoContstraints;
+/*
+	Returns the above array of all preset, supprted resolutions
+*/
+function getAllPresetVideoResolutions() {
+	return videoConstraints;
+}
+
+/*
+	Initiates the verto instance and verto will query all available hardware
+	Returns all resolutions the webcam device can support
+*/
+function getAvailableResolutions(callback) {
+	$.verto.init({}, function(){
+		callback($.FSRTC.validRes);
+	});
+}
+
+/*
+	Will first assemble results from 'getAvailableResolutions'
+	Then return the lowest supported resolution, highest supported, and the
+	median resolution to stand in place for a 'low', 'medium', and 'high'
+*/
+function getAdjustedResolutions(callback) {
+	getAvailableResolutions(
+		function(allResSupported){
+			var adjustedResolutions = []; // store selected resolutions
+			// the median in the group. Round down
+			var median = allResSupported.length === 0 ? 0 : parseInt(allResSupported.length/2);
+			// the highest supported
+			var top = allResSupported.length === 0 ? 0 : allResSupported.length-1;
+			adjustedResolutions["low"] = {"height": allResSupported[0][1], "width": allResSupported[0][0]};
+			adjustedResolutions["medium"] = {"height": allResSupported[median][1], "width": allResSupported[median][0]};
+			adjustedResolutions["high"] = {"height": allResSupported[top][1], "width": allResSupported[top][0]};
+			callback(adjustedResolutions);
+		}
+	);
 }
 
 function makeDeskshareResolutions() {
-	var videoConstraints = getAllVideoResolutions();
+	var videoConstraints = getAllPresetVideoResolutions();
 	for(var i in videoConstraints) {
 		v = videoConstraints[i];
 		$("#deskshareResolutions").append("<input type='radio' name='deskshareQuality' id='deskshareQuality_" + i + "' value='" + i + "'>");
@@ -118,7 +167,7 @@ function makeDeskshareResolutions() {
 }
 
 function makeWebcamResolutions() {
-	var videoConstraints = getAllVideoResolutions();
+	var videoConstraints = getAllPresetVideoResolutions();
 	for(var i in videoConstraints) {
 		v = videoConstraints[i];
 		$("#webcamResolutions").append("<input type='radio' name='webcamQuality' id='webcamQuality_" + i + "' value='" + i + "'>");
