@@ -54,7 +54,8 @@ function doshare(on) {
 	});
 }
 
-function doDesksharePreview() {
+var deskStream = null;
+function doDesksharePreview(onSuccess, onFailure, videoTag) {
 	getChromeExtensionStatus(function(status) {
 		sourceId = null;
 		getScreenConstraints(function(error, screen_constraints) {
@@ -63,22 +64,27 @@ function doDesksharePreview() {
 			}
 
 			console.log('screen_constraints', screen_constraints);
-			var selectedDeskshareConstraints = getChosenDeskshareResolution(); // this is the video profile the user chose
-			my_real_size(selectedDeskshareConstraints);
-			selectedDeskshareConstraints = getDeskshareConstraintsFromResolution(selectedDeskshareConstraints); // convert to a valid constraints object
+			var selectedDeskshareResolution = getChosenDeskshareResolution(); // this is the video profile the user chose
+			my_real_size(selectedDeskshareResolution);
+			var selectedDeskshareConstraints = getDeskshareConstraintsFromResolution(selectedDeskshareResolution, screen_constraints); // convert to a valid constraints object
 			console.log("new screen constraints");
 			console.log(selectedDeskshareConstraints);
 
+			if(!!deskStream) {
+				$("#" + videoTag).src = null;
+				deskStream.stop();
+			}
 			navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-			navigator.getUserMedia({ video: screen_constraints }, function(stream) {
-				var video = document.querySelector('video');
-				video.src = URL.createObjectURL(stream);
-				video.play();
-				$("#webcam").show();
+			navigator.getUserMedia(selectedDeskshareConstraints, function(stream) {
+				window.deskStream = stream;
+				$("#" + videoTag).get(0).src = URL.createObjectURL(stream);
+				$("#" + videoTag).get(0).play();
+				$("#" + videoTag).show();
 			}, function(error) {
-				return console.error(JSON.stringify(error, null, '\t'));
+				console.error(JSON.stringify(error, null, '\t'));
+				return callback(error);
 			});
-		})
+		});
 	});
 }
 
@@ -96,16 +102,16 @@ function getChosenDeskshareResolution() {
 }
 
 // receives a video resolution profile, and converts it into a constraints format for getUserMedia
-function getDeskshareConstraintsFromResolution(constraints) {
+function getDeskshareConstraintsFromResolution(resolution, constraints) {
 	return {
 		"audio": false,
 		"video": {
 			"mandatory": {
-				"maxWidth": constraints.constraints.maxWidth,
-				"maxHeight": constraints.constraints.maxHeight,
-				"chromeMediaSource": constraints.constraints.chromeMediaSource,
-				"chromeMediaSourceId": constraints.constraints.chromeMediaSourceId
-				// "minFrameRate": resolution.constraints.minFrameRate
+				"maxWidth": resolution.constraints.maxWidth,
+				"maxHeight": resolution.constraints.maxHeight,
+				"chromeMediaSource": constraints.mandatory.chromeMediaSource,
+				"chromeMediaSourceId": constraints.mandatory.chromeMediaSourceId,
+				"minFrameRate": resolution.constraints.minFrameRate
 			},
 			"optional": []
 		}

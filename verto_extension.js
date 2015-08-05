@@ -8,6 +8,7 @@ var toDisplayDisconnectCallback = true; // if a call is dropped only display the
 var voiceBridge = extension = "3500";
 var wasCallSuccessful = false; // when the websocket connection is closed this determines whether a call was ever successfully established
 var stream;
+var videoTag = null;
 
 // save a copy of the hangup function registered for the verto object
 var oldHangup = $.verto.prototype.hangup;
@@ -36,7 +37,8 @@ $.verto.prototype.hangup = function(callID, userCallback) {
 }
 
 // main entry point to making a verto call
-function callIntoConference(voiceBridge, conferenceUsername, conferenceIdNumber, userCallback) {
+function callIntoConference(voiceBridge, conferenceUsername, conferenceIdNumber, userCallback, videoTag) {
+	window.videoTag = videoTag;
 	// stores the user's callback in the global scope
 	if (userCallback) {
 		callback = userCallback;
@@ -73,14 +75,14 @@ function callIntoConference(voiceBridge, conferenceUsername, conferenceIdNumber,
 			}
 		}
 		// set up verto
-		$.verto.init({}, init);
+		$.verto.init({}, init(videoTag));
 	} else {
 		console.log("already logged into verto, going straight to making a call");
 		webrtc_call(voiceBridge, conferenceUsername, conferenceIdNumber, callback);
 	}
 }
 
-function configStuns(callbacks, callback) {
+function configStuns(callbacks, callback, videoTag) {
 	console.log("Fetching STUN/TURN server info for Verto initialization");
 	var stunsConfig = {};
 	$.ajax({
@@ -101,7 +103,7 @@ function configStuns(callbacks, callback) {
 		}) : [] );
 		stunsConfig = stunsConfig['stunServers'].concat(stunsConfig['turnServers']);
 		console.log("success got stun data, making verto");
-		makeVerto(callbacks, stunsConfig);
+		makeVerto(callbacks, stunsConfig, videoTag);
 	}).fail(function(data, textStatus, errorThrown) {
 		// BBBLog.error("Could not fetch stun/turn servers", {error: textStatus, user: callerIdName, voiceBridge: conferenceVoiceBridge});
 		callback({'status':'failed', 'errorcode': 1009});
@@ -176,12 +178,11 @@ function isLoggedIntoVerto() {
 }
 
 // overwrite and substitute my own init function
-init = function() {
-	$("#webcam").show();
+init = function(videoTag) {
 	cur_call = null;
 	share_call = null;
 	incomingBandwidth = "default";
-	configStuns(callbacks, callback);
+	configStuns(callbacks, callback, videoTag);
 }
 
 // checks whether Google Chrome or Firefox have the WebRTCPeerConnection object
@@ -274,7 +275,7 @@ function make_call(voiceBridge, conferenceUsername, conferenceIdNumber, userCall
 	}
 }
 
-function makeVerto(callbacks, stunsConfig) {
+function makeVerto(callbacks, stunsConfig, videoTag) {
 	var vertoPort = "8082";
 	var hostName = window.location.hostname;
 	var socketUrl = "wss://" + hostName + ":" + vertoPort;
@@ -294,7 +295,8 @@ function makeVerto(callbacks, stunsConfig) {
 		login: login,
 		passwd: password,
 		socketUrl: socketUrl,
-		tag: "webcam",
+		// tag: "webcam",
+		tag: videoTag,
 		ringFile: "sounds/bell_ring2.wav",
 		loginParams: {foo: true, bar: "yes"},
 		videoParams: {
@@ -325,8 +327,8 @@ function my_check_vid_res() {
 }
 
 function my_real_size(selectedVideoConstraints) {
-	$("#webcam").width(selectedVideoConstraints.constraints.maxWidth);
-	$("#webcam").height(selectedVideoConstraints.constraints.maxHeight);
+	$("#" + window.videoTag).width(selectedVideoConstraints.constraints.maxWidth);
+	$("#" + window.videoTag).height(selectedVideoConstraints.constraints.maxHeight);
 	console.log("video size changed to natural default");
 }
 
@@ -370,71 +372,30 @@ function webrtc_hangup(userCallback) {
 
 // supplement my own that insert my own button and handler
 $(document).ready(function() {
-	$("#joinAudio").click(function() {
-		wasCallSuccessful = false;
-		var debuggerCallback = function(message) {
-			console.log("CALLBACK: "+JSON.stringify(message));
-		}
-		callIntoConference(extension, conferenceUsername, conferenceIdNumber, debuggerCallback);
-	});
-
-	$("#hangUp").click(function() {
-		console.log("hangup button");
-		leaveWebRTCVoiceConference();
-		cur_call = null;
-	});
-
-	$("#shareScreen").click(function() {
-		console.log("shareScreen button");
-		screenStart(true, function(){});
-		$("#shareScreen").hide();
-		$("#stopScreen").show();
-	});
-
-	$("#stopScreen").click(function() {
-		console.log("stopScreen button");
-		screenStart(false, function(){});
-		$("#shareScreen").show();
-		$("#stopScreen").hide();
-	});
-	$("#stopScreen").hide();
-
-	$("#desksharePreview").click(function() {
-		doDesksharePreview();
-	});
-
-	$("#webcamPreview").click(function() { doWebcamPreview(); });
-
-	$("#getAdjustedResolutions").click(function() {
-		getAdjustedResolutions(function(result){
-			for(var i in result) {
-				$("#adjustedResolutions").append(i + ": " + result[i].width + "x" + result[i].height + "<br/>");
-			}
-		});
-	});
+	initUIHandlers();
 });
 
 // retrieves the camera resolution the user selected
 // displays a local feed of the user's webcam
-function doWebcamPreview() {
+function doWebcamPreview(onSuccess, onFailure, videoTag) {
 	var selectedVideoConstraints = getChosenWebcamResolution(); // this is the video profile the user chose
 	my_real_size(selectedVideoConstraints);
 	selectedVideoConstraints = getWebcamConstraintsFromResolution(selectedVideoConstraints); // convert to a valid constraints object
 
 	console.log("screen constraints", selectedVideoConstraints)
 	if(!!stream) {
-		$("#webcam").src = null;
+		$("#" + videoTag).src = null;
 		stream.stop();
 	}
 	navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
 	navigator.getUserMedia(selectedVideoConstraints, function(stream) {
-		window.stream  = stream;
-		var video = document.querySelector('video');
-		video.src = URL.createObjectURL(stream);
-		video.play();
-		$("#webcam").show()
+		window.stream = stream;
+		$("#" + videoTag).get(0).src = URL.createObjectURL(stream);
+		$("#" + videoTag).get(0).play();
+		$("#" + videoTag).show();
 	}, function(error) {
-		return console.error(JSON.stringify(error, null, '\t'));
+		console.error(JSON.stringify(error, null, '\t'));
+		return callback(error);
 	});
 }
 
