@@ -1,3 +1,6 @@
+var deskshareStream = "deskshareStream";
+window[deskshareStream] = null;
+
 function doshare(on) {
 	if (!on) {
 		if (share_call) {
@@ -54,7 +57,6 @@ function doshare(on) {
 	});
 }
 
-var deskStream = null;
 function doDesksharePreview(onSuccess, onFailure, videoTag) {
 	getChromeExtensionStatus(function(status) {
 		sourceId = null;
@@ -69,21 +71,7 @@ function doDesksharePreview(onSuccess, onFailure, videoTag) {
 			var selectedDeskshareConstraints = getDeskshareConstraintsFromResolution(selectedDeskshareResolution, screen_constraints); // convert to a valid constraints object
 			console.log("new screen constraints");
 			console.log(selectedDeskshareConstraints);
-
-			if(!!deskStream) {
-				$("#" + videoTag).src = null;
-				deskStream.stop();
-			}
-			navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-			navigator.getUserMedia(selectedDeskshareConstraints, function(stream) {
-				window.deskStream = stream;
-				$("#" + videoTag).get(0).src = URL.createObjectURL(stream);
-				$("#" + videoTag).get(0).play();
-				$("#" + videoTag).show();
-			}, function(error) {
-				console.error(JSON.stringify(error, null, '\t'));
-				return callback(error);
-			});
+			previewLocalMedia(deskshareStream, selectedDeskshareConstraints, videoTag, onSuccess, onFailure);
 		});
 	});
 }

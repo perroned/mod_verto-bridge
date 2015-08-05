@@ -7,7 +7,8 @@ var conferenceUsername = "FreeSWITCH User";
 var toDisplayDisconnectCallback = true; // if a call is dropped only display the error the first time
 var voiceBridge = extension = "3500";
 var wasCallSuccessful = false; // when the websocket connection is closed this determines whether a call was ever successfully established
-var stream;
+var webcamStream = "webcamStream";
+window[webcamStream] = null;
 var videoTag = null;
 
 // save a copy of the hangup function registered for the verto object
@@ -82,6 +83,20 @@ function callIntoConference(voiceBridge, conferenceUsername, conferenceIdNumber,
 	}
 }
 
+function checkSupport(callback) {
+	if(!isWebRTCAvailable()) {
+		callback({'status': 'failed', 'errorcode': 1003}); // Browser version not supported
+	}
+
+	if (!navigator.getUserMedia) {
+		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+	}
+
+	if (!navigator.getUserMedia){
+		callback({'status': 'failed', 'errorcode': '10XX'}); // getUserMedia not supported in this browser
+	}
+}
+
 function configStuns(callbacks, callback, videoTag) {
 	console.log("Fetching STUN/TURN server info for Verto initialization");
 	var stunsConfig = {};
@@ -140,6 +155,16 @@ function docall(extension, conferenceUsername, conferenceIdNumber, callbacks) {
 	if (callbacks != null) { // add user supplied callbacks to the current call
 		cur_call.rtc.options.callbacks = $.extend(cur_call.rtc.options.callbacks, callbacks);
 	}
+}
+
+// retrieves the camera resolution the user selected
+// displays a local feed of the user's webcam
+function doWebcamPreview(onSuccess, onFailure, videoTag) {
+	var selectedVideoConstraints = getChosenWebcamResolution(); // this is the video profile the user chose
+	my_real_size(selectedVideoConstraints);
+	selectedVideoConstraints = getWebcamConstraintsFromResolution(selectedVideoConstraints); // convert to a valid constraints object
+	console.log("screen constraints", selectedVideoConstraints)
+	previewLocalMedia(webcamStream, selectedVideoConstraints, videoTag, onSuccess, onFailure);
 }
 
 // return the webcam resolution that the user has selected
@@ -332,6 +357,29 @@ function my_real_size(selectedVideoConstraints) {
 	console.log("video size changed to natural default");
 }
 
+/*
+	receives the handle to the global resource representing the video feed
+	receives media constraints to request access to
+	receives videoTag representing where the media (if any) should be rendered
+	receives callbacks for success and failure
+*/
+function previewLocalMedia(streamHandle, videoConstraints, videoTag, onSuccess, onFailure) {
+	if(!!window[streamHandle]) {
+		$("#" + videoTag).src = null;
+		window[streamHandle].stop();
+	}
+	navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+	navigator.getUserMedia(videoConstraints, function(stream) {
+		window[streamHandle] = stream;
+		$("#" + videoTag).get(0).src = URL.createObjectURL(stream);
+		$("#" + videoTag).get(0).play();
+		$("#" + videoTag).show();
+		return onSuccess(stream);
+	}, function(error) {
+		return onFailure(error);
+	});
+}
+
 var RTCPeerConnectionCallbacks = {
 	iceFailed: function(e) {
 		console.log('received ice negotiation failed');
@@ -374,41 +422,3 @@ function webrtc_hangup(userCallback) {
 $(document).ready(function() {
 	initUIHandlers();
 });
-
-// retrieves the camera resolution the user selected
-// displays a local feed of the user's webcam
-function doWebcamPreview(onSuccess, onFailure, videoTag) {
-	var selectedVideoConstraints = getChosenWebcamResolution(); // this is the video profile the user chose
-	my_real_size(selectedVideoConstraints);
-	selectedVideoConstraints = getWebcamConstraintsFromResolution(selectedVideoConstraints); // convert to a valid constraints object
-
-	console.log("screen constraints", selectedVideoConstraints)
-	if(!!stream) {
-		$("#" + videoTag).src = null;
-		stream.stop();
-	}
-	navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
-	navigator.getUserMedia(selectedVideoConstraints, function(stream) {
-		window.stream = stream;
-		$("#" + videoTag).get(0).src = URL.createObjectURL(stream);
-		$("#" + videoTag).get(0).play();
-		$("#" + videoTag).show();
-	}, function(error) {
-		console.error(JSON.stringify(error, null, '\t'));
-		return callback(error);
-	});
-}
-
-function checkSupport(callback) {
-	if(!isWebRTCAvailable()) {
-		callback({'status': 'failed', 'errorcode': 1003}); // Browser version not supported
-	}
-
-	if (!navigator.getUserMedia) {
-		navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
-	}
-
-	if (!navigator.getUserMedia){
-		callback({'status': 'failed', 'errorcode': '10XX'}); // getUserMedia not supported in this browser
-	}
-}
