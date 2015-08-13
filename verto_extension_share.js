@@ -114,6 +114,11 @@ function getDeskshareConstraintsFromResolution(resolution, constraints) {
 }
 
 function screenStart(state, callback, videoTag) {
+	if (!!navigator.mozGetUserMedia) {
+		callback({'status': 'failed', 'errorcode': 1003});
+		return;
+	}
+
 	if (state) {
 		if(!isLoggedIntoVerto()) { // start the verto log in procedure
 			// runs when the websocket is successfully created
