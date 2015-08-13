@@ -38,7 +38,7 @@ function initUIHandlers() {
 
 	$("#shareScreen").click(function() {
 		console.log("shareScreen button");
-		screenStart(true, function(){});
+		screenStart(true, function(){}, "webcam");
 		$("#shareScreen").hide();
 		$("#stopScreen").show();
 	});
