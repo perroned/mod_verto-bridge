@@ -33,35 +33,54 @@ function doshare(on, callback, videoTag) {
 		return;
 	}
 
-	getChromeExtensionStatus( function(status) {
-		sourceId = null;
-		getScreenConstraints(function(error, screen_constraints) {
-			if(error) {
-				return console.error(error);
-			}
+	if (!!navigator.mozGetUserMedia) {
+		share_call = verto.newCall({
+			destination_number: extension + "-screen",
+			caller_id_name: conferenceUsername + " (Screen)",
+			caller_id_number: conferenceIdNumber + " (screen)",
+			outgoingBandwidth: outgoingBandwidth,
+			incomingBandwidth: incomingBandwidth,
+			videoParams: {
+				"mozMediaSource": 'window',
+				"mediaSource": 'window'
+			},
+			useVideo: true,
+			screenShare: true,
+			dedEnc: false,
+			mirrorInput: false,
+			tag: "webcam"
+		});
+	} else {
+		getChromeExtensionStatus( function(status) {
+			sourceId = null;
+			getScreenConstraints(function(error, screen_constraints) {
+				if(error) {
+					return console.error(error);
+				}
 
-			console.log('screen_constraints', screen_constraints);
-			var selectedDeskshareResolution = getChosenDeskshareResolution(); // this is the video profile the user chose
-			my_real_size(selectedDeskshareResolution);
-			var selectedDeskshareConstraints = getDeskshareConstraintsFromResolution(selectedDeskshareResolution, screen_constraints); // convert to a valid constraints object
-			console.log("new screen constraints");
-			console.log(selectedDeskshareConstraints);
+				console.log('screen_constraints', screen_constraints);
+				var selectedDeskshareResolution = getChosenDeskshareResolution(); // this is the video profile the user chose
+				my_real_size(selectedDeskshareResolution);
+				var selectedDeskshareConstraints = getDeskshareConstraintsFromResolution(selectedDeskshareResolution, screen_constraints); // convert to a valid constraints object
+				console.log("new screen constraints");
+				console.log(selectedDeskshareConstraints);
 
-			share_call = verto.newCall({
-				destination_number: extension + "-screen",
-				caller_id_name: conferenceUsername + " (Screen)",
-				caller_id_number: conferenceIdNumber + " (screen)",
-				outgoingBandwidth: outgoingBandwidth,
-				incomingBandwidth: incomingBandwidth,
-				videoParams: selectedDeskshareConstraints.video.mandatory,
-				useVideo: true,
-				screenShare: true,
-				dedEnc: false,
-				mirrorInput: false,
-				tag: videoTag
+				share_call = verto.newCall({
+					destination_number: extension + "-screen",
+					caller_id_name: conferenceUsername + " (Screen)",
+					caller_id_number: conferenceIdNumber + " (screen)",
+					outgoingBandwidth: outgoingBandwidth,
+					incomingBandwidth: incomingBandwidth,
+					videoParams: selectedDeskshareConstraints.video.mandatory,
+					useVideo: true,
+					screenShare: true,
+					dedEnc: false,
+					mirrorInput: false,
+					tag: videoTag
+				});
 			});
 		});
-	});
+	}
 }
 
 function doDesksharePreview(onSuccess, onFailure, videoTag) {
@@ -114,11 +133,6 @@ function getDeskshareConstraintsFromResolution(resolution, constraints) {
 }
 
 function screenStart(state, callback, videoTag) {
-	if (!!navigator.mozGetUserMedia) {
-		callback({'status': 'failed', 'errorcode': 1003});
-		return;
-	}
-
 	if (state) {
 		if(!isLoggedIntoVerto()) { // start the verto log in procedure
 			// runs when the websocket is successfully created
