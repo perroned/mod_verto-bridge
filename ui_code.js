@@ -26,6 +26,16 @@ function initUIHandlers() {
 		wasCallSuccessful = false;
 		var debuggerCallback = function(message) {
 			console.log("CALLBACK: "+JSON.stringify(message));
+			/*
+			* Beginning of hacky method to make Firefox media calls succeed.
+			* Always fail the first time. Retry on failure.
+			*/
+			if (!!navigator.mozGetUserMedia && message.errorcode == 1001) {
+				callIntoConference(extension, conferenceUsername, conferenceIdNumber, function(m){console.log("CALLBACK: "+JSON.stringify(m));}, "webcam");
+			}
+			/*
+			* End of hacky method
+			*/
 		}
 		callIntoConference(extension, conferenceUsername, conferenceIdNumber, debuggerCallback, "webcam");
 	});
