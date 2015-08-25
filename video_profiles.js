@@ -119,7 +119,7 @@ videoConstraints["WUXGA"] = {
 };
 
 /*
-	Returns the above array of all preset, supprted resolutions
+	Returns the above array of all preset, supported resolutions
 */
 function getAllPresetVideoResolutions() {
 	return videoConstraints;

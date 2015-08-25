@@ -34,16 +34,23 @@ function doshare(on, callback, videoTag) {
 	}
 
 	if (!!navigator.mozGetUserMedia) {
+		var selectedDeskshareResolution = getChosenDeskshareResolution(); // this is the video profile the user chose
+		my_real_size(selectedDeskshareResolution);
+		var screen_constraints = {
+			"mozMediaSource": 'window',
+			"mediaSource": 'window',
+			"width": 0,
+			"height": 0,
+			frameRate : {min: 15, max: 30}
+		};
+
 		share_call = verto.newCall({
 			destination_number: extension + "-screen",
 			caller_id_name: conferenceUsername + " (Screen)",
 			caller_id_number: conferenceIdNumber + " (screen)",
 			outgoingBandwidth: outgoingBandwidth,
 			incomingBandwidth: incomingBandwidth,
-			videoParams: {
-				"mozMediaSource": 'window',
-				"mediaSource": 'window'
-			},
+			videoParams: screen_constraints,
 			useVideo: true,
 			screenShare: true,
 			dedEnc: false,
@@ -84,22 +91,41 @@ function doshare(on, callback, videoTag) {
 }
 
 function doDesksharePreview(onSuccess, onFailure, videoTag) {
-	getChromeExtensionStatus(function(status) {
-		sourceId = null;
-		getScreenConstraints(function(error, screen_constraints) {
-			if(error) {
-				return console.error(error);
-			}
+	// Firefox
+	if (!!navigator.mozGetUserMedia) {
+		var selectedDeskshareResolution = getChosenDeskshareResolution(); // this is the video profile the user chose
+		my_real_size(selectedDeskshareResolution);
+		var selectedDeskshareConstraints = {
+			video: {
+				mediaSource: "window", // window, screen
+				mozMediaSource: "window",
+				mandatory: {
+					maxWidth: 0,
+					maxHeight: 0,
+					frameRate : {min: 10, max: 10}
+				}
+			},
+			audio: false
+		};
+		previewLocalMedia(deskshareStream, selectedDeskshareConstraints, videoTag, onSuccess, onFailure);
+	} else if(!!window.chrome) {
+		getChromeExtensionStatus(function(status) {
+			sourceId = null;
+			getScreenConstraints(function(error, screen_constraints) {
+				if(error) {
+					return console.error(error);
+				}
 
-			console.log('screen_constraints', screen_constraints);
-			var selectedDeskshareResolution = getChosenDeskshareResolution(); // this is the video profile the user chose
-			my_real_size(selectedDeskshareResolution);
-			var selectedDeskshareConstraints = getDeskshareConstraintsFromResolution(selectedDeskshareResolution, screen_constraints); // convert to a valid constraints object
-			console.log("new screen constraints");
-			console.log(selectedDeskshareConstraints);
-			previewLocalMedia(deskshareStream, selectedDeskshareConstraints, videoTag, onSuccess, onFailure);
+				console.log('screen_constraints', screen_constraints);
+				var selectedDeskshareResolution = getChosenDeskshareResolution(); // this is the video profile the user chose
+				my_real_size(selectedDeskshareResolution);
+				var selectedDeskshareConstraints = getDeskshareConstraintsFromResolution(selectedDeskshareResolution, screen_constraints); // convert to a valid constraints object
+				console.log("new screen constraints");
+				console.log(selectedDeskshareConstraints);
+				previewLocalMedia(deskshareStream, selectedDeskshareConstraints, videoTag, onSuccess, onFailure);
+			});
 		});
-	});
+	}
 }
 
 // return the webcam resolution that the user has selected
